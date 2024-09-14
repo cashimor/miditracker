@@ -5,9 +5,20 @@ from PyQt5.QtWidgets import QApplication
 from model import TrackerPattern
 from controller import TrackerController
 from ui import TrackerApp
-from midi_player import MidiPlayer
+from midi import MidiPlayer
+import pygame.midi
+
+def list_midi_devices():
+    pygame.midi.init()
+    for i in range(pygame.midi.get_count()):
+        info = pygame.midi.get_device_info(i)
+        (interface, name, is_input, is_output, opened) = info
+        print(f"ID: {i} | Name: {name.decode()} | Output: {is_output}")
+    pygame.midi.quit()
 
 def main():
+    list_midi_devices()
+
     # Create an instance of QApplication
     app = QApplication(sys.argv)
 

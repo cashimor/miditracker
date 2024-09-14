@@ -1,6 +1,6 @@
 # ui.py (continued)
 
-from PyQt5.QtWidgets import QVBoxLayout, QPushButton
+from PyQt5.QtWidgets import QMainWindow, QTableWidget, QVBoxLayout, QPushButton, QWidget, QTableWidgetItem
 
 class TrackerApp(QMainWindow):
     def __init__(self, controller, midi_player):
@@ -64,3 +64,9 @@ class TrackerApp(QMainWindow):
     def stop_playback(self):
         """Stop the MIDI playback."""
         self.midi_player.stop()
+
+    def closeEvent(self, event):
+        """Handle the window close event."""
+        self.midi_player.stop()  # Ensure playback is stopped
+        self.midi_player.close()  # Close MIDI resources
+        event.accept()  # Allow the window to close
