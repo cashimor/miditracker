@@ -1,6 +1,6 @@
 # model.py
 
-class DrumPattern:
+class TrackerPattern:
     def __init__(self, num_tracks=10, num_steps=16):
         self.num_tracks = num_tracks
         self.num_steps = num_steps

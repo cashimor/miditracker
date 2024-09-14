@@ -1,12 +1,13 @@
-# ui.py
+# ui.py (continued)
 
-from PyQt5.QtWidgets import QMainWindow, QTableWidget, QVBoxLayout, QPushButton, QWidget, QTableWidgetItem
+from PyQt5.QtWidgets import QVBoxLayout, QPushButton
 
 class TrackerApp(QMainWindow):
-    def __init__(self, controller):
+    def __init__(self, controller, midi_player):
         super().__init__()
         self.setWindowTitle('90s Sound Tracker')
-        self.controller = controller  # The controller is passed to the UI
+        self.controller = controller
+        self.midi_player = midi_player  # Pass the player to the UI
 
         # Main layout
         layout = QVBoxLayout()
@@ -28,9 +29,11 @@ class TrackerApp(QMainWindow):
         # Connect cell clicks to a function that updates the pattern
         self.grid.cellClicked.connect(self.toggle_step)
 
-        # Add buttons for play/stop
+        # Add play and stop buttons
         self.play_button = QPushButton('Play')
+        self.play_button.clicked.connect(self.start_playback)
         self.stop_button = QPushButton('Stop')
+        self.stop_button.clicked.connect(self.stop_playback)
         layout.addWidget(self.play_button)
         layout.addWidget(self.stop_button)
 
@@ -41,7 +44,7 @@ class TrackerApp(QMainWindow):
 
     def update_grid(self):
         """Update the grid UI based on the drum pattern from the controller."""
-        pattern = self.controller.get_pattern()  # Get data from the controller
+        pattern = self.controller.get_pattern()
         for row in range(16):
             for col in range(10):
                 if pattern[col][row] == 1:
@@ -51,5 +54,13 @@ class TrackerApp(QMainWindow):
 
     def toggle_step(self, row, col):
         """Notify the controller to toggle the step in the model."""
-        self.controller.toggle_step(col, row)  # Update data via controller
-        self.update_grid()  # Refresh the UI based on updated data
+        self.controller.toggle_step(col, row)
+        self.update_grid()
+
+    def start_playback(self):
+        """Start the MIDI playback."""
+        self.midi_player.start()
+
+    def stop_playback(self):
+        """Stop the MIDI playback."""
+        self.midi_player.stop()

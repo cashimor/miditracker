@@ -1,4 +1,4 @@
-class DrumController:
+class TrackerController:
     def __init__(self, drum_pattern):
         self.drum_pattern = drum_pattern  # Model (DrumPattern instance)
 
