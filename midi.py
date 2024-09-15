@@ -10,6 +10,8 @@ class MidiPlayer:
         self.is_playing = False
         self.current_step = 0
         self.play_thread = None
+        self.channel = 2  # MIDI channels are 0-indexed, so 3 is channel 2
+        self.current_notes = [0] * 10
         pygame.midi.init()
         # Change the output to another device if needed...
         self.midi_out = pygame.midi.Output(0)  # Open MIDI output
@@ -40,6 +42,14 @@ class MidiPlayer:
         self.is_playing = False
         if self.play_thread is not None:
             self.play_thread.join()  # Wait for the thread to finish
+        for track in range(10):
+            note = self.current_notes[track]
+            if note > 0:
+                channel = self.channel
+                if track > 4:
+                    channel = 9
+                self.current_notes[track] = 0
+                self.play_midi_off(channel,  note)
 
     def play_loop(self):
         """Main loop for MIDI playback."""
@@ -55,27 +65,31 @@ class MidiPlayer:
         pattern = self.controller.get_pattern()
 
         for track in range(10):
-            if pattern[track][self.current_step] == 1:
-                note = self.midi_notes[track]
-                if note:
-                    self.play_midi_on(note)
-        time.sleep(0.1)
-
-        for track in range(10):
-            if pattern[track][self.current_step] == 1:
-                note = self.midi_notes[track]
-                if note:
-                    self.play_midi_off(note)
+            if track < 5:
+                note = pattern[track][self.current_step]
+                if note > 0:
+                    if self.current_notes[track] > 0:
+                        self.play_midi_off(self.channel, self.current_notes[track])
+                    self.play_midi_on(self.channel, note)
+                    self.current_notes[track] = note
+            else:
+                if pattern[track][self.current_step] == 1:
+                    if self.current_notes[track] > 0:
+                       self.play_midi_off(9, self.current_notes[track])
+                    note = self.midi_notes[track]
+                    if note:
+                        self.play_midi_on(9, note)
+                        self.current_notes[track] = note
 
         # Move to the next step
         self.current_step = (self.current_step + 1) % 16
 
-    def play_midi_on(self, note):
+    def play_midi_on(self, channel, note):
         """Send a MIDI note-on and note-off message for the given note."""
-        self.midi_out.note_on(note, 127, 9)  # Channel 10 is index 9
+        self.midi_out.note_on(note, 127, channel)  # Channel 10 is index 9
 
-    def play_midi_off(self, note):
-        self.midi_out.note_off(note, 127, 9)
+    def play_midi_off(self, channel, note):
+        self.midi_out.note_off(note, 127, channel)
 
     def close(self):
         """Close the MIDI output."""
