@@ -36,7 +36,8 @@ def main():
     window.show()
 
     # Start the event loop
-    sys.exit(app.exec_())
-
+    result = app.exec_()
+    midi_player.close()
+    sys.exit(result)
 if __name__ == "__main__":
     main()

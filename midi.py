@@ -30,6 +30,38 @@ class MidiPlayer:
             9: 39     # Clap
         }
 
+    def get_output_devices(self):
+        # Get the number of available MIDI devices
+        device_count = pygame.midi.get_count()
+
+        # List to hold device names
+        device_names = []
+
+        # Loop through each device and get its name
+        for device_id in range(device_count):
+            info = pygame.midi.get_device_info(device_id)
+            # info[1] is the device name, and info[3] indicates if it's an output device (1 for output)
+            if info[3] == 1:  # Output devices only
+                device_names.append(info[1].decode())  # info[1] returns a bytes object
+
+        return device_names
+
+    def set_output_device(self, device_name):
+        self.stop()
+        # Find the device ID that corresponds to the selected device name
+        device_count = pygame.midi.get_count()
+        for device_id in range(device_count):
+            info = pygame.midi.get_device_info(device_id)
+            if info[1].decode() == device_name and info[3] == 1:  # Output device
+                # Close current output if any
+                if self.midi_out:
+                    self.midi_out.close()
+                pygame.midi.quit()
+                pygame.midi.init()
+                # Open the new device
+                self.midi_out = pygame.midi.Output(device_id)
+                break
+
     def start(self):
         """Start playback in a separate thread."""
         if not self.is_playing:
@@ -82,7 +114,7 @@ class MidiPlayer:
                         self.current_notes[track] = note
 
         # Move to the next step
-        self.current_step = (self.current_step + 1) % 16
+        self.current_step = (self.current_step + 1) % 64
 
     def play_midi_on(self, channel, note):
         """Send a MIDI note-on and note-off message for the given note."""

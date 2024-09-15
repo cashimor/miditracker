@@ -1,7 +1,7 @@
 # ui.py (continued)
 
 from PyQt5.QtWidgets import QMainWindow, QTableWidget, QVBoxLayout, QPushButton, QWidget, QTableWidgetItem, QFileDialog
-from PyQt5.QtWidgets import QHBoxLayout
+from PyQt5.QtWidgets import QHBoxLayout, QComboBox
 
 def midi_to_note_name(midi_note):
     """Convert a MIDI note number (0-127) to a note name."""
@@ -79,6 +79,17 @@ class TrackerApp(QMainWindow):
         self.load_button.clicked.connect(self.load_song)
 
         layout.addLayout(button_layout)
+
+        # Create a dropdown menu (QComboBox) for MIDI output devices
+        self.midi_device_dropdown = QComboBox()
+
+        # Populate the dropdown with MIDI output devices
+        self.update_midi_device_list()
+
+        # When a user selects a device, call the method to set it
+        self.midi_device_dropdown.currentIndexChanged.connect(self.on_device_selected)
+
+        layout.addWidget(self.midi_device_dropdown)
 
         self.setLayout(layout)
 
@@ -184,3 +195,18 @@ class TrackerApp(QMainWindow):
         self.midi_player.stop()  # Ensure playback is stopped
         self.midi_player.close()  # Close MIDI resources
         event.accept()  # Allow the window to close
+
+    def update_midi_device_list(self):
+        # Get the list of MIDI devices from the controller
+        devices = self.midi_player.get_output_devices()
+
+        # Clear the dropdown and repopulate with the new list
+        self.midi_device_dropdown.clear()
+        self.midi_device_dropdown.addItems(devices)
+
+    def on_device_selected(self, index):
+        # Get the selected device name from the dropdown
+        selected_device = self.midi_device_dropdown.itemText(index)
+
+        # Pass the selected device to the controller
+        self.midi_player.set_output_device(selected_device)
