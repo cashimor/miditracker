@@ -85,6 +85,7 @@ class MidiPlayer:
 
     def play_loop(self):
         """Main loop for MIDI playback."""
+        self.set_instrument(81)
         steps_per_second = (self.bpm / 60) * 4
         time_interval = 1 / steps_per_second
 
@@ -127,3 +128,9 @@ class MidiPlayer:
         """Close the MIDI output."""
         self.midi_out.close()
         pygame.midi.quit()
+
+    def set_instrument(self, instrument, channel=3):
+        if self.midi_out:
+            # Program Change message for the given channel
+            # MIDI channel 3 corresponds to channel number 2 in 0-indexed system
+            self.midi_out.write([[[0xC0 + (channel - 1), instrument, 0], pygame.midi.time()]])
