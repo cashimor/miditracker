@@ -9,8 +9,14 @@ class TrackerPattern:
 
     def toggle_step(self, track, step):
         """Toggle a step (mark/unmark) in the drum pattern."""
-        self.pattern[track][step] = 1 - self.pattern[track][step]
+        if track > 4:
+          self.pattern[track][step] = 1 - self.pattern[track][step]
 
     def get_pattern(self):
         """Return the current drum pattern."""
+        return self.pattern
+
+    def set_note_for_track(self, track, step, note):
+        """Set a MIDI note for the specified track and step."""
+        self.pattern[track][step] = note
         return self.pattern
