@@ -1,7 +1,7 @@
 # ui.py (continued)
 
-from PyQt5.QtWidgets import QMainWindow, QTableWidget, QVBoxLayout, QPushButton, QWidget, QTableWidgetItem
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QMainWindow, QTableWidget, QVBoxLayout, QPushButton, QWidget, QTableWidgetItem, QFileDialog
+from PyQt5.QtWidgets import QHBoxLayout
 
 def midi_to_note_name(midi_note):
     """Convert a MIDI note number (0-127) to a note name."""
@@ -32,8 +32,11 @@ class TrackerApp(QMainWindow):
         # Main layout
         layout = QVBoxLayout()
 
+        # Create a horizontal layout for the Save and Load buttons
+        button_layout = QHBoxLayout()
+
         # Create a grid for notes (QTableWidget simulates tracker grid)
-        self.grid = QTableWidget(16, 10)  # 16 rows (time steps) and 10 tracks
+        self.grid = QTableWidget(64, 10)  # 64 rows (time steps) and 10 tracks
         layout.addWidget(self.grid)
 
         # Set track names as column headers
@@ -54,17 +57,58 @@ class TrackerApp(QMainWindow):
         self.play_button.clicked.connect(self.start_playback)
         self.stop_button = QPushButton('Stop')
         self.stop_button.clicked.connect(self.stop_playback)
-        layout.addWidget(self.play_button)
-        layout.addWidget(self.stop_button)
+
+
+        button_layout.addWidget(self.play_button)
+        button_layout.addWidget(self.stop_button)
 
         # Set central widget
         central_widget = QWidget()
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
 
+        # Add Save and Load buttons
+        self.save_button = QPushButton('Save Song')
+        self.load_button = QPushButton('Load Song')
+
+        button_layout.addWidget(self.save_button)
+        button_layout.addWidget(self.load_button)
+
+        # Connect buttons to their respective functions
+        self.save_button.clicked.connect(self.save_song)
+        self.load_button.clicked.connect(self.load_song)
+
+        layout.addLayout(button_layout)
+
+        self.setLayout(layout)
+
+        # Set the minimum size of the window based on your layout needs
+        # Assuming each column is 50px wide and you have 10 columns
+        column_width = 100
+        number_of_columns = 10
+        extra_padding = 60  # For padding, margins, and scroll bars
+        button_height = 35  # Estimated height for buttons
+        number_of_cells_visible = 16
+
+        # Set the minimum size
+        self.setMinimumSize(column_width * number_of_columns + extra_padding, button_height * number_of_cells_visible)
+
+
+    def save_song(self):
+        file_path, _ = QFileDialog.getSaveFileName(self, "Save Song", "", "Song Files (*.json)")
+        if file_path:
+            self.controller.save_song(file_path)
+
+    def load_song(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Load Song", "", "Song Files (*.json)")
+        if file_path:
+            self.controller.load_song(file_path)
+        self.update_grid()
+
+
     def next_step(self):
         self.cursor_step = self.cursor_step + 1
-        if self.cursor_step > 15:
+        if self.cursor_step > 63:
             self.cursor_step = 0
         self.grid.setCurrentCell(self.cursor_step, self.cursor_track)
 
@@ -108,7 +152,6 @@ class TrackerApp(QMainWindow):
                     midi_note = pattern[col][row]
                     note_name = midi_to_note_name(midi_note)  # Convert MIDI note to note name
                     item = QTableWidgetItem(note_name)
-                    # item.setFlags(item.flags() & ~Qt.ItemIsEditable)  # Disable editing
                     self.grid.setItem(row, col, item)
 
                 else:

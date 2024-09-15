@@ -1,7 +1,7 @@
 # model.py
 
 class TrackerPattern:
-    def __init__(self, num_tracks=10, num_steps=16):
+    def __init__(self, num_tracks=10, num_steps=64):
         self.num_tracks = num_tracks
         self.num_steps = num_steps
         # Initialize drum pattern (0 = unmarked, 1 = marked)
@@ -15,6 +15,9 @@ class TrackerPattern:
     def get_pattern(self):
         """Return the current drum pattern."""
         return self.pattern
+
+    def set_pattern(self, pattern):
+        self.pattern = pattern
 
     def set_note_for_track(self, track, step, note):
         """Set a MIDI note for the specified track and step."""
