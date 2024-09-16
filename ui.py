@@ -2,6 +2,7 @@
 
 from PyQt5.QtWidgets import QMainWindow, QTableWidget, QVBoxLayout, QPushButton, QWidget, QTableWidgetItem, QFileDialog
 from PyQt5.QtWidgets import QHBoxLayout, QComboBox, QLabel, QSpinBox
+from PyQt5.QtGui import QFontDatabase, QFont, QPalette, QColor
 
 def midi_to_note_name(midi_note):
     """Convert a MIDI note number (0-127) to a note name."""
@@ -29,13 +30,31 @@ class TrackerApp(QMainWindow):
             'j': 10, 'm': 11
         }
 
+
+
+        font_db = QFontDatabase()
+        font_id = font_db.addApplicationFont("C64_Pro_Mono-STYLE.ttf")
+        if font_id != -1:  # Font was loaded successfully
+            c64_family = QFontDatabase.applicationFontFamilies(font_id)[0]
+            self.c64_font = QFont(c64_family, 11)
+        else:  # Fallback to a standard monospace font
+            self.c64_font = QFont("Courier", 11)  # Choose a common monospace font like Courier
+
+        # Set the background to black and text to green (90s terminal style)
+        palette = self.palette()
+        palette.setColor(QPalette.Window, QColor(0, 0, 0))  # Black background
+        palette.setColor(QPalette.WindowText, QColor(0, 255, 0))  # Green text
+        self.setPalette(palette)
+
         # Main layout
         layout = QVBoxLayout()
 
         # Add BPM control
         bpm_layout = QHBoxLayout()
         bpm_label = QLabel("BPM:")
+        bpm_label.setFont(self.c64_font)
         self.bpm_input = QSpinBox()
+        self.bpm_input.setFont(self.c64_font)
         self.bpm_input.setRange(60, 240)  # Set BPM range
         self.bpm_input.setValue(self.controller.get_bpm())
         bpm_layout.addWidget(bpm_label)
@@ -48,12 +67,17 @@ class TrackerApp(QMainWindow):
 
         # Create a grid for notes (QTableWidget simulates tracker grid)
         self.grid = QTableWidget(64, 10)  # 64 rows (time steps) and 10 tracks
+        self.grid.setFont(self.c64_font)
+        self.grid.setStyleSheet("QTableWidget { background-color: black; color: green; gridline-color: green; }"
+                                "QTableWidget::item { border: 1px solid green; }")
+        self.grid.horizontalHeader().setFont(self.c64_font)  # Horizontal headers (top)
+        self.grid.verticalHeader().setFont(self.c64_font)  # Vertical headers (side)
         layout.addWidget(self.grid)
 
         # Set track names as column headers
         track_names = [
-            "Main Voice", "Chord 1", "Chord 2", "Chord 3", "Chord 4",
-            "Kick", "Snare", "Open Hi-hat", "Closed Hi-hat", "Clap"
+            "Main", "1", "2", "3", "4",
+            "Kick", "Snare", "Open", "Closed", "Clap"
         ]
         self.grid.setHorizontalHeaderLabels(track_names)
 
@@ -65,8 +89,12 @@ class TrackerApp(QMainWindow):
 
         # Add play and stop buttons
         self.play_button = QPushButton('Play')
+        self.play_button.setFont(self.c64_font)
+        self.play_button.setStyleSheet("QPushButton { background-color: green; color: black; }")
         self.play_button.clicked.connect(self.start_playback)
         self.stop_button = QPushButton('Stop')
+        self.stop_button.setStyleSheet("QPushButton { background-color: green; color: black; }")
+        self.stop_button.setFont(self.c64_font)
         self.stop_button.clicked.connect(self.stop_playback)
 
 
@@ -80,7 +108,11 @@ class TrackerApp(QMainWindow):
 
         # Add Save and Load buttons
         self.save_button = QPushButton('Save Song')
+        self.save_button.setStyleSheet("QPushButton { background-color: green; color: black; }")
+        self.save_button.setFont(self.c64_font)
         self.load_button = QPushButton('Load Song')
+        self.load_button.setStyleSheet("QPushButton { background-color: green; color: black; }")
+        self.load_button.setFont(self.c64_font)
 
         button_layout.addWidget(self.save_button)
         button_layout.addWidget(self.load_button)
@@ -94,6 +126,7 @@ class TrackerApp(QMainWindow):
 
         # Create a dropdown menu (QComboBox) for MIDI output devices
         self.midi_device_dropdown = QComboBox()
+        self.midi_device_dropdown.setFont(self.c64_font)
 
         # Populate the dropdown with MIDI output devices
         self.update_midi_device_list()
@@ -107,7 +140,7 @@ class TrackerApp(QMainWindow):
 
         # Set the minimum size of the window based on your layout needs
         # Assuming each column is 50px wide and you have 10 columns
-        column_width = 100
+        column_width = 102
         number_of_columns = 10
         extra_padding = 60  # For padding, margins, and scroll bars
         button_height = 35  # Estimated height for buttons
