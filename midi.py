@@ -126,7 +126,9 @@ class MidiPlayer:
 
     def close(self):
         """Close the MIDI output."""
-        self.midi_out.close()
+        if self.midi_out:
+            self.midi_out.close()
+            self.midi_out = 0
         pygame.midi.quit()
 
     def set_instrument(self, instrument, channel=3):
