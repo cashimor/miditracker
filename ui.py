@@ -1,7 +1,7 @@
 # ui.py (continued)
 
 from PyQt5.QtWidgets import QMainWindow, QTableWidget, QVBoxLayout, QPushButton, QWidget, QTableWidgetItem, QFileDialog
-from PyQt5.QtWidgets import QHBoxLayout, QComboBox
+from PyQt5.QtWidgets import QHBoxLayout, QComboBox, QLabel, QSpinBox
 
 def midi_to_note_name(midi_note):
     """Convert a MIDI note number (0-127) to a note name."""
@@ -31,6 +31,17 @@ class TrackerApp(QMainWindow):
 
         # Main layout
         layout = QVBoxLayout()
+
+        # Add BPM control
+        bpm_layout = QHBoxLayout()
+        bpm_label = QLabel("BPM:")
+        self.bpm_input = QSpinBox()
+        self.bpm_input.setRange(60, 240)  # Set BPM range
+        self.bpm_input.setValue(self.controller.get_bpm())
+        bpm_layout.addWidget(bpm_label)
+        bpm_layout.addWidget(self.bpm_input)
+
+        self.bpm_input.valueChanged.connect(self.update_bpm)
 
         # Create a horizontal layout for the Save and Load buttons
         button_layout = QHBoxLayout()
@@ -78,6 +89,7 @@ class TrackerApp(QMainWindow):
         self.save_button.clicked.connect(self.save_song)
         self.load_button.clicked.connect(self.load_song)
 
+        layout.addLayout(bpm_layout)
         layout.addLayout(button_layout)
 
         # Create a dropdown menu (QComboBox) for MIDI output devices
@@ -134,7 +146,7 @@ class TrackerApp(QMainWindow):
             note = note % 12 + self.current_octave * 12
             self.controller.add_note_to_track(self.cursor_track, self.cursor_step, note)
             self.grid.setCurrentCell(0, 0)
-            self.grid.setCurrentCell(9, 15)
+            self.grid.setCurrentCell(9, 63)
             self.grid.setCurrentCell(self.cursor_step, self.cursor_track)
 
         # Handle note input
@@ -156,7 +168,7 @@ class TrackerApp(QMainWindow):
         """Update the table to display the current pattern."""
         pattern = self.controller.get_pattern()
 
-        for row in range(16):  # 16 steps
+        for row in range(64):  # 64 steps
             for col in range(10):  # 10 tracks
                 if col < 5:
                     # Voice and chord tracks: display note names
@@ -172,6 +184,7 @@ class TrackerApp(QMainWindow):
                         self.grid.setItem(row, col, QTableWidgetItem("X"))
                     else:
                         self.grid.setItem(row, col, QTableWidgetItem(""))
+        self.bpm_input.setValue(self.controller.get_bpm())
 
     def toggle_step(self, row, col):
         if col < 5:
@@ -210,3 +223,6 @@ class TrackerApp(QMainWindow):
 
         # Pass the selected device to the controller
         self.midi_player.set_output_device(selected_device)
+
+    def update_bpm(self, value):
+        self.controller.set_bpm(value)

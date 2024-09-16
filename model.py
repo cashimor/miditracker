@@ -6,6 +6,15 @@ class TrackerPattern:
         self.num_steps = num_steps
         # Initialize drum pattern (0 = unmarked, 1 = marked)
         self.pattern = [[0 for _ in range(num_steps)] for _ in range(num_tracks)]
+        self.metadata = {
+            'bpm': 120,  # Default BPM value
+        }
+
+    def get_bpm(self):
+        return self.metadata['bpm']
+
+    def set_bpm(self, bpm):
+        self.metadata['bpm'] = bpm
 
     def toggle_step(self, track, step):
         """Toggle a step (mark/unmark) in the drum pattern."""

@@ -23,13 +23,13 @@ def main():
     app = QApplication(sys.argv)
 
     # Initialize model (DrumPattern)
-    drum_pattern = TrackerPattern()
+    pattern = TrackerPattern()
 
     # Initialize controller with the model
-    controller = TrackerController(drum_pattern)
+    controller = TrackerController(pattern)
 
     # Initialize MIDI player
-    midi_player = MidiPlayer(controller, bpm=120)
+    midi_player = MidiPlayer(controller)
 
     # Create and show the UI, passing the controller and MIDI player
     window = TrackerApp(controller, midi_player)

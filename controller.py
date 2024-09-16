@@ -18,19 +18,25 @@ class TrackerController:
         # Assuming each step can hold one MIDI note value for now
         self.pattern.set_note_for_track(track, step, note)
 
-    def save_song(self, file_path):
+    def get_bpm(self):
+        return self.pattern.get_bpm()
+
+    def set_bpm(self, bpm):
+        self.pattern.set_bpm(bpm)
+
+    # Adjust saving to include metadata
+    def save_song(self, filepath):
         song_data = {
-            "pattern": self.pattern.get_pattern(),
-            # Add other song-specific data here if needed (tempo, track names, etc.)
+            'pattern': self.pattern.get_pattern(),
+            'metadata': self.pattern.metadata
         }
+        with open(filepath, 'w') as f:
+            json.dump(song_data, f)
+        print(f"Song saved to {filepath}")
 
-        with open(file_path, 'w') as file:
-            json.dump(song_data, file)
-        print(f"Song saved to {file_path}")
-
-    def load_song(self, file_path):
-        with open(file_path, 'r') as file:
-            song_data = json.load(file)
-
-        self.pattern.set_pattern(song_data["pattern"])
-        print(f"Song loaded from {file_path}")
+    def load_song(self, filepath):
+        with open(filepath, 'r') as f:
+            song_data = json.load(f)
+        self.pattern.set_pattern(song_data['pattern'])
+        self.pattern.metadata = song_data.get('metadata', {'bpm': 120})  # Default to 120 if metadata is missing
+        print(f"Song loaded from {filepath}")

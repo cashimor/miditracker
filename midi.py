@@ -3,10 +3,9 @@ import time
 import threading
 
 class MidiPlayer:
-    def __init__(self, controller, bpm=120):
+    def __init__(self, controller):
 
         self.controller = controller
-        self.bpm = bpm
         self.is_playing = False
         self.current_step = 0
         self.play_thread = None
@@ -86,7 +85,8 @@ class MidiPlayer:
     def play_loop(self):
         """Main loop for MIDI playback."""
         self.set_instrument(81)
-        steps_per_second = (self.bpm / 60) * 4
+        bpm = self.controller.get_bpm()
+        steps_per_second = (bpm / 60) * 4
         time_interval = 1 / steps_per_second
 
         while self.is_playing:
