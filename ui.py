@@ -8,6 +8,8 @@ def midi_to_note_name(midi_note):
     """Convert a MIDI note number (0-127) to a note name."""
     if midi_note is None or midi_note == 0:
         return ""
+    if midi_note == 128:
+        return "REST"
     note_names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
     octave = midi_note // 12  # Calculate the octave
     note = midi_note % 12  # Get the note within the octave
@@ -171,6 +173,14 @@ class TrackerApp(QMainWindow):
     def keyPressEvent(self, event):
         """Handle key press events for note entry."""
         key = event.text()
+
+        if key in 'a':
+            self.controller.add_note_to_track(self.cursor_track, self.cursor_step, 128)
+            self.next_step()
+
+        if key in 'f':
+            self.controller.add_note_to_track(self.cursor_track, self.cursor_step, 0)
+            self.next_step()
 
         # Handle number keys to change the octave
         if key in '01234567':

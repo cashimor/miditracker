@@ -103,8 +103,11 @@ class MidiPlayer:
                 if note > 0:
                     if self.current_notes[track] > 0:
                         self.play_midi_off(self.channel, self.current_notes[track])
-                    self.play_midi_on(self.channel, note)
-                    self.current_notes[track] = note
+                    if note < 128:
+                        self.play_midi_on(self.channel, note)
+                        self.current_notes[track] = note
+                    else:
+                        self.current_notes[track] = 0
             else:
                 if pattern[track][self.current_step] == 1:
                     if self.current_notes[track] > 0:
