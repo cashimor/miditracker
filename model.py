@@ -22,7 +22,7 @@ class TrackerPattern:
           self.pattern[track][step] = 1 - self.pattern[track][step]
 
     def get_pattern(self):
-        """Return the current drum pattern."""
+        """Return the current pattern."""
         return self.pattern
 
     def set_pattern(self, pattern):

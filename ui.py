@@ -145,7 +145,7 @@ class TrackerApp(QMainWindow):
         column_width = 102
         number_of_columns = 10
         extra_padding = 60  # For padding, margins, and scroll bars
-        button_height = 35  # Estimated height for buttons
+        button_height = 40  # Estimated height for buttons
         number_of_cells_visible = 16
 
         # Set the minimum size
