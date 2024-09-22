@@ -84,7 +84,8 @@ class MidiPlayer:
 
     def play_loop(self):
         """Main loop for MIDI playback."""
-        self.set_instrument(81)
+        # self.set_instrument(81)
+        self.cc(1)
         bpm = self.controller.get_bpm()
         steps_per_second = (bpm / 60) * 4
         time_interval = 1 / steps_per_second
@@ -99,12 +100,15 @@ class MidiPlayer:
 
         for track in range(10):
             if track < 5:
+                channel = self.channel
+                if track == 0:
+                    channel = 3
                 note = pattern[track][self.current_step]
                 if note > 0:
                     if self.current_notes[track] > 0:
-                        self.play_midi_off(self.channel, self.current_notes[track])
+                        self.play_midi_off(channel, self.current_notes[track])
                     if note < 128:
-                        self.play_midi_on(self.channel, note)
+                        self.play_midi_on(channel, note)
                         self.current_notes[track] = note
                     else:
                         self.current_notes[track] = 0
@@ -139,3 +143,9 @@ class MidiPlayer:
             # Program Change message for the given channel
             # MIDI channel 3 corresponds to channel number 2 in 0-indexed system
             self.midi_out.write([[[0xC0 + (channel - 1), instrument, 0], pygame.midi.time()]])
+
+    def cc(self, msg, control=70, channel=3):
+        if self.midi_out:
+            # CC message for the given channel
+            # MIDI channel 3 corresponds to channel number 2 in 0-indexed system
+            self.midi_out.write([[[0xB0 + (channel - 1), control, msg], pygame.midi.time()]])

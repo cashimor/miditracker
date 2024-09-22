@@ -26,6 +26,7 @@ def main():
     pattern = TrackerPattern()
 
     # Initialize controller with the model
+
     controller = TrackerController(pattern)
 
     # Initialize MIDI player
