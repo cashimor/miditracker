@@ -92,6 +92,11 @@ class MidiPlayer:
 
         while self.is_playing:
             self.play_step()
+            time.sleep(0.01)
+            for track in [5, 6, 7, 8, 9]:
+                if self.current_notes[track] > 0:
+                    self.play_midi_off(9, self.current_notes[track])
+                    self.current_notes[track] = 0;
             time.sleep(time_interval)
 
     def play_step(self):
@@ -120,7 +125,6 @@ class MidiPlayer:
                     if note:
                         self.play_midi_on(9, note)
                         self.current_notes[track] = note
-
         # Move to the next step
         self.current_step = (self.current_step + 1) % 64
 
