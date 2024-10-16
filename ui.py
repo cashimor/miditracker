@@ -97,9 +97,25 @@ class TrackerApp(QMainWindow):
         self.stop_button.setFont(self.c64_font)
         self.stop_button.clicked.connect(self.stop_playback)
 
-
         button_layout.addWidget(self.play_button)
         button_layout.addWidget(self.stop_button)
+
+        # Add this to the init method in TrackerApp, before setting the central widget
+        pattern_layout = QHBoxLayout()
+
+        # Create pattern buttons
+        self.pattern_buttons = []
+        for i in range(4):  # For patterns P1 to P4
+            button = QPushButton(f'P{i + 1}')
+            button.setFont(self.c64_font)
+            button.setStyleSheet("QPushButton { background-color: green; color: black; }")
+            button.clicked.connect(
+                lambda _, index=i: self.switch_pattern(index))  # Connect button click to switch_pattern
+            self.pattern_buttons.append(button)
+            pattern_layout.addWidget(button)
+
+        # Add pattern layout to the main layout
+        layout.addLayout(pattern_layout)
 
         # Set central widget
         central_widget = QWidget()
@@ -269,3 +285,8 @@ class TrackerApp(QMainWindow):
 
     def update_bpm(self, value):
         self.controller.set_bpm(value)
+
+    def switch_pattern(self, pattern_index):
+        """Switch to a different pattern based on the pattern_index (0 to 3 for P1 to P4)."""
+        self.controller.switch_to_pattern(pattern_index)  # Assuming the controller has this method
+        self.update_grid()  # Refresh the grid to display the new pattern

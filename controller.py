@@ -26,10 +26,7 @@ class TrackerController:
 
     # Adjust saving to include metadata
     def save_song(self, filepath):
-        song_data = {
-            'pattern': self.pattern.get_pattern(),
-            'metadata': self.pattern.metadata
-        }
+        song_data = self.pattern.get_song_data()
         with open(filepath, 'w') as f:
             json.dump(song_data, f)
         print(f"Song saved to {filepath}")
@@ -37,6 +34,10 @@ class TrackerController:
     def load_song(self, filepath):
         with open(filepath, 'r') as f:
             song_data = json.load(f)
-        self.pattern.set_pattern(song_data['pattern'])
-        self.pattern.metadata = song_data.get('metadata', {'bpm': 120})  # Default to 120 if metadata is missing
+        self.pattern.set_song_data(song_data)
         print(f"Song loaded from {filepath}")
+
+    def switch_to_pattern(self, pattern_index):
+        """Switch to the pattern at the given index."""
+        self.pattern.set_current_pattern(pattern_index);
+
