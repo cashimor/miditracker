@@ -30,5 +30,8 @@ class TrackerPattern:
 
     def set_note_for_track(self, track, step, note):
         """Set a MIDI note for the specified track and step."""
+        if track > 4:
+            self.toggle_step(track, step)
+            return self.pattern
         self.pattern[track][step] = note
         return self.pattern

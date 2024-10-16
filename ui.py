@@ -32,8 +32,6 @@ class TrackerApp(QMainWindow):
             'j': 10, 'm': 11
         }
 
-
-
         font_db = QFontDatabase()
         font_id = font_db.addApplicationFont("C64_Pro_Mono-STYLE.ttf")
         if font_id != -1:  # Font was loaded successfully
@@ -172,8 +170,10 @@ class TrackerApp(QMainWindow):
 
     def keyPressEvent(self, event):
         """Handle key press events for note entry."""
-        key = event.text()
+        self.cursor_track = self.grid.currentColumn()
+        self.cursor_step = self.grid.currentRow()
 
+        key = event.text()
         if key in 'a':
             self.controller.add_note_to_track(self.cursor_track, self.cursor_step, 128)
             self.next_step()
