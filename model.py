@@ -9,6 +9,9 @@ class TrackerPattern:
         self.metadata = {
             'bpm': 120,  # Default BPM value
         }
+        self.pattern_sequence = [0] * 10  # Initially all pattern slots set to 0
+        self.track_masks = [0b1111] * 10  # Initially all tracks enabled for each part (1111 = all tracks)
+
 
     def get_bpm(self):
         return self.metadata['bpm']
@@ -50,9 +53,32 @@ class TrackerPattern:
         return {
             'patterns': self.patterns,
             'metadata': self.metadata,
+            'pattern_sequence': self.pattern_sequence,
+            'track_masks': self.track_masks,
         }
 
     def set_song_data(self, data):
         """Load song data including all patterns and metadata."""
         self.patterns = data['patterns']
         self.metadata = data['metadata']
+        if 'pattern_sequence' in data:
+            self.pattern_sequence = data['pattern_sequence']
+            self.track_masks = data['track_masks']
+
+    def set_pattern_sequence(self, index, pattern_index):
+        """Set a pattern in the sequence (index 0-9)."""
+        if 0 <= index < 10:
+            self.pattern_sequence[index] = pattern_index
+
+    def set_track_mask(self, index, mask):
+        """Set the 4-bit track mask for a particular pattern in the sequence."""
+        if 0 <= index < 10:
+            self.track_masks[index] = mask
+
+    def get_pattern_sequence(self):
+        """Return the current pattern sequence."""
+        return self.pattern_sequence
+
+    def get_track_masks(self):
+        """Return the track masks for the pattern sequence."""
+        return self.track_masks

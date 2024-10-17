@@ -117,6 +117,31 @@ class TrackerApp(QMainWindow):
         # Add pattern layout to the main layout
         layout.addLayout(pattern_layout)
 
+        # Create the buttonbar
+        buttonbar = QHBoxLayout()
+        buttonbar.setSpacing(0)
+        buttonbar.setContentsMargins(0, 0, 0, 0)
+        # Create the 10 song
+        self.track_buttons = []  # Store references to buttons for later state management
+        for i in range(8):
+            btn = QPushButton('P1', self)
+            btn.setFixedSize(35, 25)  # Larger buttons for patterns
+            btn.setFont(self.c64_font)
+            btn.setStyleSheet("QPushButton { background-color: green; color: black; }")
+            btn.clicked.connect(self.handle_pattern_click)  # Connect to a click handler
+            buttonbar.addWidget(btn)
+            for track in ['M', 'C', 'L', 'H']:  # Main, Chord, Kick/Clap, Snare/Hi-Hat
+                btn = QPushButton(track, self)
+                btn.setFixedSize(20, 25)  # Smaller buttons for track mask
+                btn.setFont(self.c64_font)
+                btn.setCheckable(True)  # Make the button toggleable
+                btn.clicked.connect(self.handle_mask_click)  # Connect to a click handler
+                buttonbar.addWidget(btn)
+                self.track_buttons.append(btn)  # Store button reference
+        # Set the layout to the window
+        layout.addLayout(buttonbar)
+
+
         # Set central widget
         central_widget = QWidget()
         central_widget.setLayout(layout)
@@ -290,3 +315,32 @@ class TrackerApp(QMainWindow):
         """Switch to a different pattern based on the pattern_index (0 to 3 for P1 to P4)."""
         self.controller.switch_to_pattern(pattern_index)  # Assuming the controller has this method
         self.update_grid()  # Refresh the grid to display the new pattern
+
+    def handle_pattern_click(self):
+        # Handle pattern selection click
+        button = self.sender()  # Get the clicked button
+
+        # Get the current pattern number (e.g., 'P1', 'P2', etc.)
+        current_pattern = button.text()
+
+        # Define the pattern cycle
+        pattern_cycle = ['P1', 'P2', 'P3', 'P4']
+
+        # Find the next pattern in the cycle
+        current_index = pattern_cycle.index(current_pattern)
+        next_pattern = pattern_cycle[(current_index + 1) % len(pattern_cycle)]  # Cycle to the next one
+
+        # Update the button text to the next pattern
+        button.setText(next_pattern)
+
+    def handle_mask_click(self):
+        # Handle mask button click
+        button = self.sender()
+        if button.isChecked():
+            # If button is toggled on, set to active style (invert state)
+            button.setStyleSheet("background-color: black; color: green;")
+        else:
+            # If button is toggled off, reset to default (inactive state)
+            button.setStyleSheet("")
+        print("mask clicked!")
+
