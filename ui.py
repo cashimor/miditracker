@@ -31,7 +31,9 @@ class TrackerApp(QMainWindow):
             'v': 5, 'g': 6, 'b': 7, 'h': 8, 'n': 9,
             'j': 10, 'm': 11
         }
-
+        self.track_to_mask = {
+            'M': 1, 'C': 2, 'L': 4, 'H': 8
+        }
         font_db = QFontDatabase()
         font_id = font_db.addApplicationFont("C64_Pro_Mono-STYLE.ttf")
         if font_id != -1:  # Font was loaded successfully
@@ -81,9 +83,6 @@ class TrackerApp(QMainWindow):
         ]
         self.grid.setHorizontalHeaderLabels(track_names)
 
-        # Populate grid based on initial drum pattern
-        self.update_grid()
-
         # Connect cell clicks to a function that updates the pattern
         self.grid.cellClicked.connect(self.toggle_step)
 
@@ -104,14 +103,12 @@ class TrackerApp(QMainWindow):
         pattern_layout = QHBoxLayout()
 
         # Create pattern buttons
-        self.pattern_buttons = []
         for i in range(4):  # For patterns P1 to P4
             button = QPushButton(f'P{i + 1}')
             button.setFont(self.c64_font)
             button.setStyleSheet("QPushButton { background-color: green; color: black; }")
             button.clicked.connect(
                 lambda _, index=i: self.switch_pattern(index))  # Connect button click to switch_pattern
-            self.pattern_buttons.append(button)
             pattern_layout.addWidget(button)
 
         # Add pattern layout to the main layout
@@ -122,25 +119,33 @@ class TrackerApp(QMainWindow):
         buttonbar.setSpacing(0)
         buttonbar.setContentsMargins(0, 0, 0, 0)
         # Create the 10 song
+        self.pattern_buttons = []
         self.track_buttons = []  # Store references to buttons for later state management
         for i in range(8):
-            btn = QPushButton('P1', self)
+            btn = QPushButton(f'P1', self)
             btn.setFixedSize(35, 25)  # Larger buttons for patterns
             btn.setFont(self.c64_font)
             btn.setStyleSheet("QPushButton { background-color: green; color: black; }")
+            btn.setProperty('pattern_id', i)
             btn.clicked.connect(self.handle_pattern_click)  # Connect to a click handler
             buttonbar.addWidget(btn)
+            self.pattern_buttons.append(btn)
             for track in ['M', 'C', 'L', 'H']:  # Main, Chord, Kick/Clap, Snare/Hi-Hat
                 btn = QPushButton(track, self)
                 btn.setFixedSize(20, 25)  # Smaller buttons for track mask
                 btn.setFont(self.c64_font)
                 btn.setCheckable(True)  # Make the button toggleable
+                btn.setProperty('pattern_id', i)
+                btn.setProperty('track', track)
+                btn.setProperty('mask', self.track_to_mask[track])
                 btn.clicked.connect(self.handle_mask_click)  # Connect to a click handler
                 buttonbar.addWidget(btn)
                 self.track_buttons.append(btn)  # Store button reference
         # Set the layout to the window
         layout.addLayout(buttonbar)
 
+        # Populate grid based on initial drum pattern
+        self.update_grid()
 
         # Set central widget
         central_widget = QWidget()
@@ -269,6 +274,17 @@ class TrackerApp(QMainWindow):
                     else:
                         self.grid.setItem(row, col, QTableWidgetItem(""))
         self.bpm_input.setValue(self.controller.get_bpm())
+        pattern_sequence = self.controller.get_pattern_sequence()
+        for i in self.pattern_buttons:
+            i.setText(f"P{pattern_sequence[i.property("pattern_id")]}")
+        track_masks = self.controller.get_track_masks()
+        for i in self.track_buttons:
+            if (track_masks[i.property("pattern_id")] & i.property("mask")) > 0:
+                i.setChecked(False)
+                i.setStyleSheet("")
+            else:
+                i.setChecked(True)
+                i.setStyleSheet("background-color: black; color: green;")
 
     def toggle_step(self, row, col):
         if col < 5:
@@ -333,14 +349,22 @@ class TrackerApp(QMainWindow):
         # Update the button text to the next pattern
         button.setText(next_pattern)
 
+        # Extract the integer part from the pattern string (e.g., 'P1' -> 1)
+        pattern_number = int(next_pattern[1])  # Convert 'P1' -> 1, 'P2' -> 2, etc.
+        pattern_index = button.property("pattern_id")
+        self.controller.set_song_pattern(pattern_index, pattern_number)
+
     def handle_mask_click(self):
         # Handle mask button click
         button = self.sender()
+        pattern_index = button.property("pattern_id")
+        mask = button.property("mask")
         if button.isChecked():
             # If button is toggled on, set to active style (invert state)
             button.setStyleSheet("background-color: black; color: green;")
+            self.controller.set_track_mask(pattern_index, mask, 0)
         else:
             # If button is toggled off, reset to default (inactive state)
             button.setStyleSheet("")
-        print("mask clicked!")
+            self.controller.set_track_mask(pattern_index, mask, 1)
 

@@ -9,7 +9,7 @@ class TrackerPattern:
         self.metadata = {
             'bpm': 120,  # Default BPM value
         }
-        self.pattern_sequence = [0] * 10  # Initially all pattern slots set to 0
+        self.pattern_sequence = [1] * 10  # Initially all pattern slots set to 0
         self.track_masks = [0b1111] * 10  # Initially all tracks enabled for each part (1111 = all tracks)
 
 
@@ -70,10 +70,14 @@ class TrackerPattern:
         if 0 <= index < 10:
             self.pattern_sequence[index] = pattern_index
 
-    def set_track_mask(self, index, mask):
+    def set_track_mask(self, index, mask, value):
         """Set the 4-bit track mask for a particular pattern in the sequence."""
+        print(f"{index} - {mask} - {value}")
         if 0 <= index < 10:
-            self.track_masks[index] = mask
+            if value == 1:
+                self.track_masks[index] = self.track_masks[index] | mask
+            else:
+                self.track_masks[index] = self.track_masks[index] & (15 - mask)
 
     def get_pattern_sequence(self):
         """Return the current pattern sequence."""

@@ -39,5 +39,17 @@ class TrackerController:
 
     def switch_to_pattern(self, pattern_index):
         """Switch to the pattern at the given index."""
-        self.pattern.set_current_pattern(pattern_index);
+        self.pattern.set_current_pattern(pattern_index)
+
+    def set_song_pattern(self, pattern_id, next_pattern):
+        self.pattern.set_pattern_sequence(pattern_id, next_pattern)
+
+    def set_track_mask(self, pattern_id, mask, value):
+        self.pattern.set_track_mask(pattern_id, mask, value)
+
+    def get_pattern_sequence(self):
+        return self.pattern.get_pattern_sequence()
+
+    def get_track_masks(self):
+        return self.pattern.get_track_masks()
 
