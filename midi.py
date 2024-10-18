@@ -4,7 +4,6 @@ import threading
 
 class MidiPlayer:
     def __init__(self, controller):
-
         self.controller = controller
         self.is_playing = False
         self.current_step = 0
@@ -69,7 +68,6 @@ class MidiPlayer:
         self.controller.switch_to_pattern(pattern)
         self.mask = self.controller.get_track_masks()[self.sequence]
         self.current_step = 0
-        print(f"NEXT: {self.sequence} {pattern} {self.mask}")
 
     def start(self, sequence = -1):
         """Start playback in a separate thread."""
@@ -116,6 +114,8 @@ class MidiPlayer:
     def play_step(self):
         """Play the notes for the current step in the drum pattern."""
         pattern = self.controller.get_pattern()
+
+        self.song_position_signal.emit(f"{self.sequence}/{self.current_step}")
 
         for track in range(10):
             if track < 5:
@@ -173,3 +173,6 @@ class MidiPlayer:
             # CC message for the given channel
             # MIDI channel 3 corresponds to channel number 2 in 0-indexed system
             self.midi_out.write([[[0xB0 + (channel - 1), control, msg], pygame.midi.time()]])
+
+    def set_signal(self, song_position_signal):
+        self.song_position_signal = song_position_signal

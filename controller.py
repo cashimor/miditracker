@@ -1,5 +1,6 @@
 import json
 
+
 class TrackerController:
     def __init__(self, pattern):
         self.pattern = pattern  # Model (Pattern instance)
@@ -53,3 +54,5 @@ class TrackerController:
     def get_track_masks(self):
         return self.pattern.get_track_masks()
 
+    def emit_signal(self, signal):
+        self.song_position_signal.emit(signal)

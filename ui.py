@@ -3,6 +3,7 @@
 from PyQt5.QtWidgets import QMainWindow, QTableWidget, QVBoxLayout, QPushButton, QWidget, QTableWidgetItem, QFileDialog
 from PyQt5.QtWidgets import QHBoxLayout, QComboBox, QLabel, QSpinBox
 from PyQt5.QtGui import QFontDatabase, QFont, QPalette, QColor
+from PyQt5.QtCore import pyqtSignal
 
 def midi_to_note_name(midi_note):
     """Convert a MIDI note number (0-127) to a note name."""
@@ -16,14 +17,19 @@ def midi_to_note_name(midi_note):
     return f"{note_names[note]}{octave}"
 
 class TrackerApp(QMainWindow):
+    song_position_signal = pyqtSignal(str)
+
     def __init__(self, controller, midi_player):
         super().__init__()
+        self.song_position_signal.connect(self.handle_position_update)
         self.setWindowTitle('90s Sound Tracker')
         self.controller = controller
         self.midi_player = midi_player  # Pass the player to the UI
+        self.midi_player.set_signal(self.song_position_signal)
         self.current_octave = 4  # Default octave is 4
         self.cursor_track = 0
         self.cursor_step = 0
+        self.current_pattern = 0
 
         # Mapping of keys to relative note positions (semitones)
         self.key_to_note = {
@@ -53,6 +59,16 @@ class TrackerApp(QMainWindow):
 
         # Add BPM control
         bpm_layout = QHBoxLayout()
+        self.position_label = QLabel("-1/0")
+        self.position_label.setFont(self.c64_font)
+        self.position_label.setFixedWidth(100)
+        self.pattern_label = QLabel("P1")
+        self.pattern_label.setFont(self.c64_font)
+        self.pattern_label.setFixedWidth(100)
+
+        bpm_layout.addWidget(self.position_label)
+        bpm_layout.addWidget(self.pattern_label)
+
         bpm_label = QLabel("BPM:")
         bpm_label.setFont(self.c64_font)
         self.bpm_input = QSpinBox()
@@ -61,7 +77,10 @@ class TrackerApp(QMainWindow):
         self.bpm_input.setValue(self.controller.get_bpm())
         bpm_layout.addWidget(bpm_label)
         bpm_layout.addWidget(self.bpm_input)
-
+        bpm_layout.setStretch(0, 0)
+        bpm_layout.setStretch(1, 0)
+        bpm_layout.setStretch(2, 0)
+        bpm_layout.setStretch(3, 1)
         self.bpm_input.valueChanged.connect(self.update_bpm)
 
         # Create a horizontal layout for the Save and Load buttons
@@ -200,7 +219,6 @@ class TrackerApp(QMainWindow):
         # Set the minimum size
         self.setMinimumSize(column_width * number_of_columns + extra_padding, button_height * number_of_cells_visible)
 
-
     def save_song(self):
         file_path, _ = QFileDialog.getSaveFileName(self, "Save Song", "", "Song Files (*.json)")
         if file_path:
@@ -338,8 +356,10 @@ class TrackerApp(QMainWindow):
 
     def switch_pattern(self, pattern_index):
         """Switch to a different pattern based on the pattern_index (0 to 3 for P1 to P4)."""
+        self.current_pattern = pattern_index
         self.controller.switch_to_pattern(pattern_index)  # Assuming the controller has this method
         self.update_grid()  # Refresh the grid to display the new pattern
+        self.pattern_label.setText(f"P{pattern_index + 1}")
 
     def handle_pattern_click(self):
         # Handle pattern selection click
@@ -377,3 +397,16 @@ class TrackerApp(QMainWindow):
             button.setStyleSheet("")
             self.controller.set_track_mask(pattern_index, mask, 1)
 
+
+    def handle_position_update(self, position):
+        self.position_label.setText(position)
+        # position_string is in the format <song_sequence>/<step_number>
+        song_sequence, step_number = map(int, position.split('/'))
+        # Update the song sequence only if it changes
+        if song_sequence == -1:
+            return
+        pattern = self.controller.get_pattern_sequence()[song_sequence] - 1
+        if pattern != self.current_pattern:
+            self.current_pattern = pattern
+            self.update_grid()  # Refresh the grid to display the new pattern
+            self.pattern_label.setText(f"P{pattern + 1}")

@@ -1,12 +1,12 @@
 # main.py
 
+import pygame.midi
 import sys
 from PyQt5.QtWidgets import QApplication
-from model import TrackerPattern
 from controller import TrackerController
-from ui import TrackerApp
 from midi import MidiPlayer
-import pygame.midi
+from model import TrackerPattern
+from ui import TrackerApp
 
 def list_midi_devices():
     pygame.midi.init()
@@ -26,7 +26,6 @@ def main():
     pattern = TrackerPattern()
 
     # Initialize controller with the model
-
     controller = TrackerController(pattern)
 
     # Initialize MIDI player
