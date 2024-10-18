@@ -91,12 +91,17 @@ class TrackerApp(QMainWindow):
         self.play_button.setFont(self.c64_font)
         self.play_button.setStyleSheet("QPushButton { background-color: green; color: black; }")
         self.play_button.clicked.connect(self.start_playback)
+        self.song_button = QPushButton('Play Song')
+        self.song_button.setFont(self.c64_font)
+        self.song_button.setStyleSheet("QPushButton { background-color: green; color: black; }")
+        self.song_button.clicked.connect(self.song_playback)
         self.stop_button = QPushButton('Stop')
         self.stop_button.setStyleSheet("QPushButton { background-color: green; color: black; }")
         self.stop_button.setFont(self.c64_font)
         self.stop_button.clicked.connect(self.stop_playback)
 
         button_layout.addWidget(self.play_button)
+        button_layout.addWidget(self.song_button)
         button_layout.addWidget(self.stop_button)
 
         # Add this to the init method in TrackerApp, before setting the central widget
@@ -298,6 +303,10 @@ class TrackerApp(QMainWindow):
     def start_playback(self):
         """Start the MIDI playback."""
         self.midi_player.start()
+
+    def song_playback(self):
+        """Start the MIDI playback."""
+        self.midi_player.song()
 
     def stop_playback(self):
         """Stop the MIDI playback."""

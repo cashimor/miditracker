@@ -61,8 +61,22 @@ class MidiPlayer:
                 self.midi_out = pygame.midi.Output(device_id)
                 break
 
-    def start(self):
+    def song(self):
+        self.start(0)
+
+    def next_song_sequence(self):
+        pattern = self.controller.get_pattern_sequence()[self.sequence] - 1
+        self.controller.switch_to_pattern(pattern)
+        self.mask = self.controller.get_track_masks()[self.sequence]
+        self.current_step = 0
+        print(f"NEXT: {self.sequence} {pattern} {self.mask}")
+
+    def start(self, sequence = -1):
         """Start playback in a separate thread."""
+        self.sequence = sequence
+        self.mask = 15
+        if sequence != -1:
+            self.next_song_sequence()
         if not self.is_playing:
             self.is_playing = True
             self.play_thread = threading.Thread(target=self.play_loop)
@@ -112,7 +126,7 @@ class MidiPlayer:
                 if note > 0:
                     if self.current_notes[track] > 0:
                         self.play_midi_off(channel, self.current_notes[track])
-                    if note < 128:
+                    if note < 128 and ((self.mask & 1 > 0 and channel == 3) or (self.mask & 2 > 0 and channel != 3)):
                         self.play_midi_on(channel, note)
                         self.current_notes[track] = note
                     else:
@@ -122,11 +136,17 @@ class MidiPlayer:
                     if self.current_notes[track] > 0:
                        self.play_midi_off(9, self.current_notes[track])
                     note = self.midi_notes[track]
-                    if note:
+                    if note > 0 and ((self.mask & 4 > 0 and track == 5) or (self.mask & 8 > 0 and track > 5)):
                         self.play_midi_on(9, note)
                         self.current_notes[track] = note
         # Move to the next step
         self.current_step = (self.current_step + 1) % 64
+        if self.sequence >= 0:
+            if self.current_step == 0:
+                self.sequence = self.sequence + 1
+                if self.sequence > 7:
+                    self.sequence = 0
+                self.next_song_sequence()
 
     def play_midi_on(self, channel, note):
         """Send a MIDI note-on and note-off message for the given note."""

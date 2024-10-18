@@ -72,7 +72,6 @@ class TrackerPattern:
 
     def set_track_mask(self, index, mask, value):
         """Set the 4-bit track mask for a particular pattern in the sequence."""
-        print(f"{index} - {mask} - {value}")
         if 0 <= index < 10:
             if value == 1:
                 self.track_masks[index] = self.track_masks[index] | mask
