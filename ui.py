@@ -243,6 +243,7 @@ class TrackerApp(QMainWindow):
         self.cursor_step = self.grid.currentRow()
         key = event.text()
         if key == "":
+            super().keyPressEvent(event)
             return
         if key == 'a':
             self.controller.add_note_to_track(self.cursor_track, self.cursor_step, 128)
@@ -400,6 +401,7 @@ class TrackerApp(QMainWindow):
         self.position_label.setText(position)
         # position_string is in the format <song_sequence>/<step_number>
         song_sequence, step_number = map(int, position.split('/'))
+        self.grid.setCurrentCell(step_number, self.cursor_track)
         # Update the song sequence only if it changes
         if song_sequence == -1:
             return
