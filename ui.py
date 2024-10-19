@@ -241,26 +241,25 @@ class TrackerApp(QMainWindow):
         """Handle key press events for note entry."""
         self.cursor_track = self.grid.currentColumn()
         self.cursor_step = self.grid.currentRow()
-
         key = event.text()
-        if key in 'a':
+        if key == "":
+            return
+        if key == 'a':
             self.controller.add_note_to_track(self.cursor_track, self.cursor_step, 128)
             self.next_step()
-
-        if key in 'f':
+        if key == 'f':
             self.controller.add_note_to_track(self.cursor_track, self.cursor_step, 0)
             self.next_step()
-
         # Handle number keys to change the octave
         if key in '01234567':
+            print("bla")
             self.current_octave = int(key)
             note = self.controller.get_pattern()[self.cursor_track][self.cursor_step]
             note = note % 12 + self.current_octave * 12
             self.controller.add_note_to_track(self.cursor_track, self.cursor_step, note)
             self.grid.setCurrentCell(0, 0)
-            self.grid.setCurrentCell(9, 63)
+            self.grid.setCurrentCell(63, 9)
             self.grid.setCurrentCell(self.cursor_step, self.cursor_track)
-
         # Handle note input
         if key in self.key_to_note:
             # Calculate the MIDI note based on the current octave and key
@@ -271,7 +270,6 @@ class TrackerApp(QMainWindow):
 
             # Optional: Play the note immediately for feedback
             # self.midi_player.play_midi(note)
-
         # Call the parent method for default key handling
         super().keyPressEvent(event)
         self.update_grid()
